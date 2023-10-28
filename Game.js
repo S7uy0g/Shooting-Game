@@ -6,6 +6,8 @@ let gameSpeed=2;
 
 const DroneImage=new Image();
 DroneImage.src='Forward.png';
+const PlaneImage=new Image();
+PlaneImage.src='Plane.png';
 const BoomImage=new Image();
 BoomImage.src='boom.png';
 let frame=0;
@@ -14,9 +16,11 @@ let x=0;
 let canvasPosition=canvas.getBoundingClientRect();
 let dronesPassed=0;
 let score=0;
+let life=5;
 //console.log(canvasPosition);
 //let canvasPosition=canvas.getBoundingClientRect();
 const scoreValue=document.getElementById("showGameScore");
+const lifeValue=document.getElementById("Life");
 
 
 const backgroundImage=new Image();
@@ -57,6 +61,13 @@ window.addEventListener('click', function (e) {
             BoomAnimation(e);
             enemy1[i].x = Math.random() * -110;
             enemy1[i].y = Math.random() * 400;
+            score++;
+            scoreValue.innerHTML = score;
+        }
+        if (isCollision(enemy2[i], e)) {
+            BoomAnimation(e);
+            enemy2[i].x = Math.random() * -110;
+            enemy2[i].y = Math.random() * 400;
             score++;
             scoreValue.innerHTML = score;
         }
@@ -112,14 +123,16 @@ class Enemy1{
         this.height=70;
         this.width=100;
         this.frame=0;
+        this.speed=Math.random()*1.5+2;
     }
     update(){
-        this.x=this.x+3;//gameSpeed;
+        this.x=this.x+this.speed;//gameSpeed;
         if(this.x>CANVAS_WIDTH){
             this.x=Math.random()*-110;
             this.y=Math.random()*400;
             dronesPassed++;
-            console.log("drone:",dronesPassed);
+            life--;
+            lifeValue.innerHTML="LIFE:"+life;
             if(dronesPassed>=4){
                 showOver.innerHTML="GAME OVER";
                 gameOver();
@@ -137,13 +150,48 @@ class Enemy1{
         ctx.drawImage(DroneImage,this.frame*this.enemyWidth,10,this.enemyWidth,this.enemyHeight,this.x,this.y,this.width,this.height);
     }
 }
+class Enemy2{
+    constructor(){
+        this.x=Math.random()*-110;
+        this.y=Math.random()*400;
+        this.enemyWidth=90;
+        this.enemyHeight=30;
+        this.height=30;
+        this.width=150;
+        this.speed=Math.random()*1.5+3;
+    }
+    update(){
+        this.x=this.x+this.speed;//gameSpeed;
+        if(this.x>CANVAS_WIDTH){
+            this.x=Math.random()*-110;
+            this.y=Math.random()*400;
+            dronesPassed++;
+            life--;
+            lifeValue.innerHTML="LIFE:"+life;
+            if(dronesPassed>=4){
+                showOver.innerHTML="GAME OVER";
+                gameOver();
+            }
+        }
+    }
+    draw(){
+        //ctx.fillRect(this.x,this.y,this.width,this.height)
+        ctx.drawImage(PlaneImage,5,35,this.enemyWidth,this.enemyHeight,this.x,this.y,this.width,this.height);
+    }
+}
 const background=new Background(backgroundImage);
 const drone1=new Enemy1();
 const drone2=new Enemy1();
 const drone3=new Enemy1();
 const drone4=new Enemy1();
-const enemy1=[drone1,drone2,drone3,drone4];
+const enemy1=[drone1,drone2];
+const plane1=new Enemy2();
+const plane2=new Enemy2();
+const plane3=new Enemy2();
+const plane4=new Enemy2();
+const enemy2=[plane1,plane2];
 const explosions=[];
+let draw=0;
 function animate(){
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     background.draw();
@@ -151,6 +199,11 @@ function animate(){
         Object.update();
         Object.draw();
     });
+    enemy2.forEach(Object =>{
+        Object.update();
+        Object.draw();
+    });
+    draw++;
     gameFrame++;
     for(let i=0;i<explosions.length;i++){
         explosions[i].update();
@@ -160,7 +213,7 @@ function animate(){
             i--;
         }
     }
-    gameSpeed+=0.000;
+    gameSpeed+=0.002;
     requestAnimationFrame(animate);
 }
 animate();
